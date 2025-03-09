@@ -1,5 +1,6 @@
 package com.unity.user_service.service;
 
+import com.unity.user_service.dto.LoginRequestDTO;
 import com.unity.user_service.dto.UserDTO;
 import java.util.List;
 import java.util.Optional;
@@ -13,4 +14,5 @@ public interface UserService {
     UserDTO updateUser(Long id, UserDTO userDTO);
     void softDeleteUser(Long id);
     void restoreUser(Long id);
+    UserDTO loginUser(LoginRequestDTO loginRequest);
 }
