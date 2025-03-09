@@ -1,6 +1,7 @@
 package com.unity.user_service.service.impl;
 
 import com.unity.user_service.constants.Status;
+import com.unity.user_service.dto.LoginRequestDTO;
 import com.unity.user_service.dto.UserDTO;
 import com.unity.user_service.entity.User;
 import com.unity.user_service.exception.UserException;
@@ -103,5 +104,17 @@ public class UserServiceImpl implements UserService {
                     user.setDeleted(false);
                     userRepository.save(user);
                 });
+    }
+
+    @Override
+    public UserDTO loginUser(LoginRequestDTO loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new UserException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new UserException("Invalid username or password");
+        }
+
+        return UserMapper.toDTO(user);
     }
 }
