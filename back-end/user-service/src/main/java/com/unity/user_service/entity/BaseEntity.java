@@ -13,18 +13,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class) // Enables automatic timestamp updates
+@EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @ToString
-public abstract class BaseEntity {  // Making it abstract so it's not instantiated directly
+public abstract class BaseEntity {
 
     @CreatedDate
-    @Column(updatable = false, nullable = false) // Ensures creation timestamp is never updated
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(insertable = false, nullable = false) // Ensures update timestamp is auto-generated
+    @Column(insertable = false, nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private boolean isDeleted = false; // Soft delete flag
+    private boolean isDeleted = false;
 }

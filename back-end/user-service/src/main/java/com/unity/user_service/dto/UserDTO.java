@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Builder
 public class UserDTO {
 
-    private Long id; // ID is optional in DTOs (set only when returning data)
+    private Long id;
 
     @NotNull(message = "Username cannot be null")
     @Size(min = 3, max = 50, message = "Username must be between 3-50 characters")
@@ -30,7 +30,7 @@ public class UserDTO {
 
     @NotNull(message = "Date of birth is required")
     @Past(message = "Date of birth must be a past date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")  // Ensure JSON format is YYYY-MM-DD
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
     @NotNull(message = "Phone number is required")
@@ -42,8 +42,8 @@ public class UserDTO {
     private String email;
 
     @NotNull(message = "Password cannot be empty")
-    @Size(min = 6, message = "Password must have at least 6 characters") // Raw password for input validation
+    @Size(min = 6, message = "Password must have at least 6 characters")
     private String password;
 
-    private Status status; // Status is sent to the frontend but not validated here
+    private Status status;
 }

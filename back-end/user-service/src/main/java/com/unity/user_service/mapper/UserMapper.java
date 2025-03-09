@@ -53,7 +53,7 @@ public class UserMapper {
         user.setDateOfBirth(userDTO.getDateOfBirth());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword()); // Ensure password is hashed before saving
+        user.setPassword(userDTO.getPassword());
         user.setStatus(userDTO.getStatus());
 
         return user;
