@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌟 Login Page Container */
+.login-container {
+  @apply flex items-center justify-center h-screen;
+}
+
+/* 🌟 Login Form Box */
+.login-box {
+  @apply w-full max-w-sm bg-[#fc7500] p-6 rounded-xl shadow-lg;
+}
+
+/* 🌟 Heading */
+.login-heading {
+  @apply text-2xl font-bold text-center text-white mb-4;
+}
+
+/* 🌟 Input Field */
+.login-input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition;
+}
+
+/* 🌟 Submit Button */
+.login-btn {
+  @apply w-full bg-blue-100 text-black py-2 rounded-lg font-semibold hover:opacity-90 transition-all;
+}
+
+/* 🌟 Link Text */
+.login-link {
+  @apply text-white text-sm underline cursor-pointer hover:text-gray-200 transition;
+}

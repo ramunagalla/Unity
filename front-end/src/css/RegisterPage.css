@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌟 Register Page Container */
+.register-container {
+  @apply flex items-center justify-center h-screen bg-white;
+}
+
+/* 🌟 Form Box */
+.register-box {
+  @apply w-full max-w-sm bg-[#fc7500] p-6 rounded-xl shadow-lg;
+}
+
+/* 🌟 Heading */
+.register-heading {
+  @apply text-2xl font-bold text-center text-white mb-4;
+}
+
+/* 🌟 Input Label */
+.register-label {
+  @apply block font-medium text-white;
+}
+
+/* 🌟 Input Field */
+.register-input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition;
+}
+
+/* 🌟 Submit Button */
+.register-button {
+  @apply w-full bg-blue-100 text-black py-2 rounded-lg font-semibold hover:opacity-90 transition-all;
+}
+
+/* 🌟 Link Text */
+.register-link {
+  @apply text-white text-sm underline cursor-pointer hover:text-gray-200 transition;
+}
+
+/* 🌟 Error Message */
+.register-error {
+  @apply text-red-600 text-sm text-center mb-3;
+}
