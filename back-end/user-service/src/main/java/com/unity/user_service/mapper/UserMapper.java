@@ -1,22 +1,4 @@
- package com.unity.user_service.mapper;
-
-// import org.mapstruct.Mapper;
-// import org.mapstruct.Mapping;
-// import org.mapstruct.Named;
-// import com.unity.user_service.constants.Status;
-// import com.unity.user_service.dto.UserDTO;
-// import com.unity.user_service.entity.User;
-
-// public UserMapper {
-
-//   //  @Mapping(target = "password", source = "password") // Prevent exposing passwords in DTO
-//     UserDTO toDTO(User user);
-
-//     //@Mapping(target = "id", ignore = true) // ID should not be set manually
-//     @Mapping(target = "firstName", source = "firstName") // Convert Enum properly
-//     User toEntity(UserDTO userDTO);
-
-// }
+package com.unity.user_service.mapper;
 
 import com.unity.user_service.dto.UserDTO;
 import com.unity.user_service.entity.User;
@@ -37,6 +19,7 @@ public class UserMapper {
         userDTO.setPhoneNumber(user.getPhoneNumber());
         userDTO.setEmail(user.getEmail());
         userDTO.setStatus(user.getStatus());
+        userDTO.setRole(user.getRole());
 
         return userDTO;
     }
@@ -55,6 +38,7 @@ public class UserMapper {
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
         user.setStatus(userDTO.getStatus());
+        user.setRole(userDTO.getRole());
 
         return user;
     }
