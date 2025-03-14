@@ -1,5 +1,6 @@
 package com.unity.user_service.service.impl;
 
+import com.unity.user_service.constants.Role;
 import com.unity.user_service.constants.Status;
 import com.unity.user_service.dto.LoginRequestDTO;
 import com.unity.user_service.dto.UserDTO;
@@ -27,7 +28,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO registerUser(UserDTO userDTO) {
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new UserException("Username is already taken.");
+        }
+
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new UserException("Email is already in use.");
+        }
+
         userDTO.setStatus(Status.PENDING);
+        userDTO.setRole(Role.USER);
         User user = UserMapper.toEntity(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
@@ -39,47 +49,18 @@ public class UserServiceImpl implements UserService {
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         return userRepository.findById(id)
                 .map(existingUser -> {
-                    existingUser.setFirstName(userDTO.getFirstName());
-                    existingUser.setLastName(userDTO.getLastName());
+                    existingUser.setEmail(userDTO.getEmail());
                     existingUser.setPhoneNumber(userDTO.getPhoneNumber());
-                    existingUser.setDateOfBirth(userDTO.getDateOfBirth());
-                    existingUser.setStatus(userDTO.getStatus());
-
-                    if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-                        existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-                    }
-
                     userRepository.save(existingUser);
                     return UserMapper.toDTO(existingUser);
-                })
-                .orElseThrow(() -> new UserException("User not found!"));
+                }).orElseThrow(() -> new UserException("User not found!"));
     }
 
     @Override
     public Optional<UserDTO> getUserById(Long id) {
-        return Optional.ofNullable(
-                userRepository.findById(id)
-                        .filter(user -> !user.isDeleted())
-                        .map(UserMapper::toDTO)
-                        .orElseThrow(() -> new UserException("User not found with ID: " + id)));
-    }
-
-    @Override
-    public Optional<UserDTO> getUserByEmail(String email) {
-        return Optional.ofNullable(
-                userRepository.findByEmail(email)
-                        .filter(user -> !user.isDeleted())
-                        .map(UserMapper::toDTO)
-                        .orElseThrow(() -> new UserException("User not found with email: " + email)));
-    }
-
-    @Override
-    public Optional<UserDTO> getUserByUsername(String username) {
-        return Optional.ofNullable(
-                userRepository.findByUsername(username)
-                        .filter(user -> !user.isDeleted())
-                        .map(UserMapper::toDTO)
-                        .orElseThrow(() -> new UserException("User not found with username: " + username)));
+        return userRepository.findById(id)
+                .filter(user -> !user.isDeleted())
+                .map(UserMapper::toDTO);
     }
 
     @Override
@@ -115,6 +96,43 @@ public class UserServiceImpl implements UserService {
             throw new UserException("Invalid username or password");
         }
 
+        if (user.getRole() == Role.USER && user.getStatus() != Status.ACTIVE) {
+            throw new UserException("User Not Active");
+        }
+
         return UserMapper.toDTO(user);
     }
+
+    @Override
+    public void approveUser(Long userId, Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new UserException("Admin not found"));
+
+        if (!admin.getRole().equals(Role.ADMIN)) {
+            throw new UserException("Only admins can approve users!");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("User not found"));
+
+        user.setStatus(Status.ACTIVE);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deactivateUser(Long userId, Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new UserException("Admin not found"));
+
+        if (!admin.getRole().equals(Role.ADMIN)) {
+            throw new UserException("Only admins can deactivate users!");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("User not found"));
+
+        user.setStatus(Status.SUSPENDED);
+        userRepository.save(user);
+    }
+
 }

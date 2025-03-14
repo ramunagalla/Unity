@@ -29,18 +29,6 @@ public class UserController {
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/getUserByEmail")
-    public ResponseEntity<UserDTO> getUserByEmail(@RequestParam String email) {
-        Optional<UserDTO> user = userService.getUserByEmail(email);
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/getUserByUsername")
-    public ResponseEntity<UserDTO> getUserByUsername(@RequestParam String username) {
-        Optional<UserDTO> user = userService.getUserByUsername(username);
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/getAllUsers")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers();
@@ -78,4 +66,17 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PutMapping("/approveUser")
+    public ResponseEntity<String> approveUser(@RequestParam Long userId, @RequestParam Long adminId) {
+        userService.approveUser(userId, adminId);
+        return ResponseEntity.ok("User approved successfully!");
+    }
+
+    @PutMapping("/deactivateUser")
+    public ResponseEntity<String> deactivateUser(@RequestParam Long userId, @RequestParam Long adminId) {
+        userService.deactivateUser(userId, adminId);
+        return ResponseEntity.ok("User login deactivated!");
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.unity.user_service.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.unity.user_service.constants.Role;
 import com.unity.user_service.constants.Status;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -9,9 +10,6 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UserDTO {
 
     private Long id;
@@ -46,4 +44,6 @@ public class UserDTO {
     private String password;
 
     private Status status;
+
+    private Role role;
 }

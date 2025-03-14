@@ -1,5 +1,6 @@
 package com.unity.user_service.entity;
 
+import com.unity.user_service.constants.Role;
 import com.unity.user_service.constants.Status;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,12 +12,11 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity{
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -38,6 +38,10 @@ public class User extends BaseEntity{
     private String password;
 
     @Column(nullable = false)
-    private Status status = Status.PENDING; // Default status for new users
+    private Status status = Status.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
 
 }
