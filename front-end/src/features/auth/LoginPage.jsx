@@ -17,13 +17,23 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const response = await authService.login(credentials);
-      localStorage.setItem("user", JSON.stringify(response.user));
-      navigate("/dashboard");
+        const response = await authService.login(credentials);
+        const user = response.data; // Extracting the user object
+
+        if (!user || !user.role) {
+            throw new Error("Invalid response from server");
+        }
+
+        // Store user details in localStorage
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Redirect based on role
+        navigate(user.role === "ADMIN" ? "/admin-dashboard" : "/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid login credentials");
+        setError(err.response?.data || "Invalid login credentials");
     }
-  };
+};
+
 
   return (
     <div className="login-container">
