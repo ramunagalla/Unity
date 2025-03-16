@@ -60,8 +60,8 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
         try {
-            UserDTO user = userService.loginUser(loginRequest); // Fetch user details
-            return ResponseEntity.ok(user); // Return user details instead of a string
+            UserDTO user = userService.loginUser(loginRequest);
+            return ResponseEntity.ok(user);
         } catch (UserException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
