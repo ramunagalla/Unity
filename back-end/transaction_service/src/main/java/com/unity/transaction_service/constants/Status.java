@@ -1,4 +1,4 @@
-package com.unity.user_service.constants;
+package com.unity.transaction_service.constants;
 
 public enum Status {
     PENDING,
