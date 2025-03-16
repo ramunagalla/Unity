@@ -1,8 +1,7 @@
 package com.unity.account_service.constants;
 
-public enum Status {
-    PENDING,
+public enum AccountStatus {
     ACTIVE,
     SUSPENDED,
-    DEACTIVATED
+    CLOSED
 }
