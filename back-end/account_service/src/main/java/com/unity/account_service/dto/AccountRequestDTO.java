@@ -1,6 +1,8 @@
 package com.unity.account_service.dto;
 
 import com.unity.account_service.constants.AccountRequestStatus;
+import com.unity.account_service.constants.AccountType;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +17,7 @@ public class AccountRequestDTO {
     private Long userId;
 
     @NotNull(message = "Account type is required")
-    private String accountType;
+    private AccountType accountType;
 
     private AccountRequestStatus status;
 }
