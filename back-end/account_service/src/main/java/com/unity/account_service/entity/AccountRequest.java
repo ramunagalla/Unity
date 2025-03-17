@@ -1,6 +1,8 @@
 package com.unity.account_service.entity;
 
 import com.unity.account_service.constants.AccountRequestStatus;
+import com.unity.account_service.constants.AccountType;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +12,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountRequest {
+public class AccountRequest extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +22,7 @@ public class AccountRequest {
     private Long userId;
 
     @Column(nullable = false)
-    private String accountType;
+    private AccountType accountType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
