@@ -3,6 +3,7 @@ package com.unity.account_service.service.impl;
 import com.unity.account_service.client.UserServiceClient;
 import com.unity.account_service.constants.AccountRequestStatus;
 import com.unity.account_service.constants.AccountStatus;
+import com.unity.account_service.constants.Role;
 import com.unity.account_service.dto.AccountRequestDTO;
 import com.unity.account_service.dto.BankAccountDTO;
 import com.unity.account_service.dto.UserDTO;
@@ -37,6 +38,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void requestAccount(AccountRequestDTO requestDTO) {
+        requestDTO.setStatus(AccountRequestStatus.PENDING);
         AccountRequest accountRequest = AccountRequestMapper.toEntity(requestDTO);
         accountRequestRepository.save(accountRequest);
     }
@@ -103,7 +105,7 @@ public class AccountServiceImpl implements AccountService {
 
     private void validateAdmin(Long adminId) {
         UserDTO user = userServiceClient.getUserById(adminId);
-        if (user == null || !user.getRole().equals("ADMIN")) {
+        if (user == null || !user.getRole().equals(Role.ADMIN)) {
             throw new AccountException("Unauthorized action. Admin access required.");
         }
     }

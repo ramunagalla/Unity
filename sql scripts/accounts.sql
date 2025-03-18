@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS bank_accounts;
+
 CREATE TABLE bank_accounts (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     account_number VARCHAR(12) NOT NULL UNIQUE,
@@ -10,6 +12,8 @@ CREATE TABLE bank_accounts (
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+DROP TABLE IF EXISTS account_requests;
 
 CREATE TABLE account_requests (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
