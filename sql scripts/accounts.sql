@@ -1,5 +1,8 @@
+-- Drop existing tables if they exist
 DROP TABLE IF EXISTS bank_accounts;
+DROP TABLE IF EXISTS account_requests;
 
+-- Create `bank_accounts` table
 CREATE TABLE bank_accounts (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     account_number VARCHAR(12) NOT NULL UNIQUE,
@@ -13,12 +16,13 @@ CREATE TABLE bank_accounts (
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-DROP TABLE IF EXISTS account_requests;
-
+-- Create `account_requests` table
 CREATE TABLE account_requests (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    account_type VARCHAR(50) NOT NULL,
+    account_type ENUM('SAVINGS', 'CHECKING') NOT NULL,
+    request_type ENUM('NEW_BANK_ACCOUNT', 'CLOSE_BANK_ACCOUNT', 'SUSPEND_BANK_ACCOUNT') NOT NULL,
+    bank_account_id BIGINT DEFAULT NULL,
     status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
