@@ -2,6 +2,7 @@ package com.unity.account_service.entity;
 
 import com.unity.account_service.constants.AccountRequestStatus;
 import com.unity.account_service.constants.AccountType;
+import com.unity.account_service.constants.RequestType;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +24,11 @@ public class AccountRequest extends BaseEntity{
 
     @Column(nullable = false)
     private AccountType accountType;
+
+    @Column(nullable = false)
+    private RequestType requestType;
+
+    private Long bankAccountId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

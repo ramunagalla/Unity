@@ -15,6 +15,8 @@ public class AccountRequestMapper {
         dto.setUserId(request.getUserId());
         dto.setAccountType(request.getAccountType());
         dto.setStatus(request.getStatus());
+        dto.setRequestType(request.getRequestType());
+        dto.setBankAccountId(request.getBankAccountId());
 
         return dto;
     }
@@ -28,7 +30,9 @@ public class AccountRequestMapper {
         request.setUserId(dto.getUserId());
         request.setAccountType(dto.getAccountType());
         request.setStatus(dto.getStatus());
-
+        request.setRequestType(dto.getRequestType());
+        request.setBankAccountId(dto.getBankAccountId());
+        
         return request;
     }
 }

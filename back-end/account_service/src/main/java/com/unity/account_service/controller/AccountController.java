@@ -1,8 +1,9 @@
 package com.unity.account_service.controller;
 
-import com.unity.account_service.dto.AccountRequestDTO;
-import com.unity.account_service.dto.BankAccountDTO;
+import com.unity.account_service.constants.AccountStatus;
+import com.unity.account_service.dto.*;
 import com.unity.account_service.service.AccountService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,63 +11,72 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/accounts")
 public class AccountController {
 
     @Autowired
     private AccountService accountService;
 
-    @PostMapping("/requestAccount")
-    public ResponseEntity<String> requestAccount(@RequestBody AccountRequestDTO requestDTO) {
-        accountService.requestAccount(requestDTO);
-        return ResponseEntity.ok("Account request submitted successfully!");
+    @PostMapping("/request")
+    public ResponseEntity<String> requestAccount(@RequestParam AccountRequestDTO accountRequestDTO) {
+        String response = accountService.createAccountRequest(accountRequestDTO);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/getRequests")
-    public ResponseEntity<List<AccountRequestDTO>> getAllRequests() {
-        return ResponseEntity.ok(accountService.getAllAccountRequests());
+    @GetMapping("/requests/pending")
+    public ResponseEntity<List<AccountRequestDTO>> getPendingRequests(@RequestParam int page, @RequestParam int limit) {
+        List<AccountRequestDTO> requests = accountService.getPendingRequests(page, limit);
+        return ResponseEntity.ok(requests);
     }
 
-    @PutMapping("/approveRequest")
-    public ResponseEntity<String> approveAccountRequest(@RequestParam Long requestId, @RequestParam Long adminId) {
-        accountService.approveAccountRequest(requestId, adminId);
-        return ResponseEntity.ok("Account request approved and account created.");
+    @PostMapping("/approveRequest")
+    public ResponseEntity<String> approveRequest(@RequestParam Long requestId, @RequestParam Long adminId) {
+        String response = accountService.approveAccountRequest(requestId, adminId);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/rejectRequest")
-    public ResponseEntity<String> rejectAccountRequest(@RequestParam Long requestId, @RequestParam Long adminId) {
-        accountService.rejectAccountRequest(requestId, adminId);
-        return ResponseEntity.ok("Account request rejected.");
+    @PostMapping("/rejectRequest")
+    public ResponseEntity<String> rejectRequest(@RequestParam Long requestId, @RequestParam Long adminId) {
+        String response = accountService.rejectAccountRequest(requestId, adminId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/getUserAccounts")
-    public ResponseEntity<List<BankAccountDTO>> getUserAccounts(@RequestParam Long userId) {
-        return ResponseEntity.ok(accountService.getUserAccounts(userId));
+    public ResponseEntity<List<BankAccountDTO>> getUserAccounts(
+            @RequestParam Long userId,
+            @RequestParam AccountStatus status,
+            @RequestParam int page,
+            @RequestParam int limit) {
+        
+        List<BankAccountDTO> accounts = accountService.getUserAccounts(userId, status, page, limit);
+        return ResponseEntity.ok(accounts);
     }
 
-    @PutMapping("/deactivateAccount")
-    public ResponseEntity<String> deactivateAccount(@RequestParam Long accountId, @RequestParam Long adminId) {
-        accountService.deactivateAccount(accountId, adminId);
-        return ResponseEntity.ok("Account deactivated successfully.");
-    }
-
-    @PutMapping("/closeAccount")
-    public ResponseEntity<String> closeAccount(@RequestParam Long accountId, @RequestParam Long adminId) {
-        accountService.closeAccount(accountId, adminId);
-        return ResponseEntity.ok("Account closed successfully.");
-    }
-
-    @PutMapping("/updateBalance")
-    public ResponseEntity<String> updateBalance(
-            @RequestParam Long accountId,
-            @RequestParam double amount) {
-        accountService.updateAccountBalance(accountId, amount);
-        return ResponseEntity.ok("Account balance updated successfully.");
+    @GetMapping("/getPrimaryAccount")
+    public ResponseEntity<BankAccountDTO> getUserPrimaryAccount(@RequestParam Long userId) {
+        BankAccountDTO account = accountService.getPrimaryBankAccount(userId);
+        return ResponseEntity.ok(account);
     }
 
     @GetMapping("/getBalance")
-    public ResponseEntity<Double> getAccountBalance(@RequestParam Long accountId) {
-        double balance = accountService.getAccountBalance(accountId);
+    public ResponseEntity<Double> getBalance(@RequestParam Long userId, @RequestParam Long bankAccountId) {
+        double balance = accountService.getBalance(userId, bankAccountId);
         return ResponseEntity.ok(balance);
+    }
+
+    @PostMapping("/updateBalance")
+    public ResponseEntity<String> updateBalance(
+            @RequestParam Long userId,
+            @RequestParam Long bankAccountId,
+            @RequestParam double amount) {
+        
+        String response = accountService.updateBalance(userId, bankAccountId, amount);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/getBankAccount")
+    public ResponseEntity<BankAccountDTO> getActiveBankAccount(@RequestParam Long userId, @RequestParam Long bankAccountId) {
+        BankAccountDTO account = accountService.getActiveBankAccount(userId, bankAccountId);
+        return ResponseEntity.ok(account);
     }
 }

@@ -1,12 +1,9 @@
 package com.unity.account_service.service.impl;
 
+import com.unity.account_service.client.NotificationServiceClient;
 import com.unity.account_service.client.UserServiceClient;
-import com.unity.account_service.constants.AccountRequestStatus;
-import com.unity.account_service.constants.AccountStatus;
-import com.unity.account_service.constants.Role;
-import com.unity.account_service.dto.AccountRequestDTO;
-import com.unity.account_service.dto.BankAccountDTO;
-import com.unity.account_service.dto.UserDTO;
+import com.unity.account_service.constants.*;
+import com.unity.account_service.dto.*;
 import com.unity.account_service.entity.AccountRequest;
 import com.unity.account_service.entity.BankAccount;
 import com.unity.account_service.exception.AccountException;
@@ -16,14 +13,15 @@ import com.unity.account_service.repository.AccountRequestRepository;
 import com.unity.account_service.repository.BankAccountRepository;
 import com.unity.account_service.service.AccountService;
 
-import jakarta.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -35,82 +33,82 @@ public class AccountServiceImpl implements AccountService {
     private BankAccountRepository bankAccountRepository;
 
     @Autowired
-    private UserServiceClient userServiceClient; // Using Feign Client
+    private UserServiceClient userServiceClient;
+
+    @Autowired
+    private NotificationServiceClient notificationServiceClient;
 
     private static final long START_ACCOUNT_NUMBER = 100000000001L;
 
     @Override
-    public void requestAccount(AccountRequestDTO requestDTO) {
-        requestDTO.setStatus(AccountRequestStatus.PENDING);
-        AccountRequest accountRequest = AccountRequestMapper.toEntity(requestDTO);
-        accountRequestRepository.save(accountRequest);
+    @Transactional
+    public String createAccountRequest(AccountRequestDTO accountRequestDTO) {
+
+        if (accountRequestDTO.getUserId() == null || accountRequestDTO.getAccountType() == null || accountRequestDTO.getRequestType() == null) {
+            throw new AccountException("User ID, account type, and request type are required.");
+        }
+
+        if (accountRequestDTO.getRequestType() != RequestType.NEW_BANK_ACCOUNT && accountRequestDTO.getBankAccountId() == null) {
+            throw new AccountException("Bank account ID is required for closing or suspending an account.");
+        }
+
+        AccountRequest request = AccountRequestMapper.toEntity(accountRequestDTO);
+        request.setStatus(AccountRequestStatus.PENDING);
+        
+        accountRequestRepository.save(request);
+        return "Account request submitted successfully.";
     }
 
     @Override
-    public List<AccountRequestDTO> getAllAccountRequests() {
-        return accountRequestRepository.findAll().stream()
-                .map(AccountRequestMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<AccountRequestDTO> getPendingRequests(int page, int limit) {
+        List<AccountRequest> requests = accountRequestRepository.findPendingRequests(page, limit);
+        if (requests.isEmpty()) {
+            return new ArrayList<AccountRequestDTO>();
+        }
+        return requests.stream().map(AccountRequestMapper::toDTO).toList();
     }
 
     @Override
-    public void approveAccountRequest(Long requestId, Long adminId) {
-        validateAdmin(adminId);
+    @Transactional
+    public String approveAccountRequest(Long requestId, Long adminId) {
+        UserDTO admin = userServiceClient.getUserById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            throw new AccountException("Only admins can approve requests.");
+        }
 
         AccountRequest request = accountRequestRepository.findById(requestId)
-                .orElseThrow(() -> new AccountException("Request not found"));
+                .orElseThrow(() -> new AccountException("Account request not found."));
 
         request.setStatus(AccountRequestStatus.APPROVED);
-        accountRequestRepository.save(request);
 
-        String newAccountNumber = generateNewAccountNumber();
-        BankAccount newAccount = new BankAccount();
-        newAccount.setUserId(request.getUserId());
-        newAccount.setAccountType(request.getAccountType());
-        newAccount.setAccountNumber(newAccountNumber);
-        newAccount.setStatus(AccountStatus.ACTIVE);
-        bankAccountRepository.save(newAccount);
-    }
-
-    @Override
-    public void rejectAccountRequest(Long requestId, Long adminId) {
-        validateAdmin(adminId);
-        AccountRequest request = accountRequestRepository.findById(requestId)
-                .orElseThrow(() -> new AccountException("Request not found"));
-        request.setStatus(AccountRequestStatus.REJECTED);
-        accountRequestRepository.save(request);
-    }
-
-    @Override
-    public List<BankAccountDTO> getUserAccounts(Long userId) {
-        return bankAccountRepository.findByUserId(userId).stream()
-                .map(BankAccountMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deactivateAccount(Long accountId, Long adminId) {
-        validateAdmin(adminId);
-        BankAccount account = bankAccountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountException("Account not found"));
-        account.setStatus(AccountStatus.SUSPENDED);
-        bankAccountRepository.save(account);
-    }
-
-    @Override
-    public void closeAccount(Long accountId, Long adminId) {
-        validateAdmin(adminId);
-        BankAccount account = bankAccountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountException("Account not found"));
-        account.setStatus(AccountStatus.CLOSED);
-        bankAccountRepository.save(account);
-    }
-
-    private void validateAdmin(Long adminId) {
-        UserDTO user = userServiceClient.getUserById(adminId);
-        if (user == null || !user.getRole().equals(Role.ADMIN)) {
-            throw new AccountException("Unauthorized action. Admin access required.");
+        if (request.getRequestType() == RequestType.NEW_BANK_ACCOUNT) {
+            String accountNumber = generateNewAccountNumber();
+            BankAccount account = new BankAccount();
+            account.setUserId(request.getUserId());
+            account.setAccountNumber(accountNumber);
+            account.setAccountType(request.getAccountType());
+            account.setStatus(AccountStatus.ACTIVE);
+            account.setBalance(0.0);
+            bankAccountRepository.save(account);
+            String message = "account created";
+        notificationServiceClient.saveNotification(request.getUserId(), message, null);
+        } else {
+            BankAccount account = bankAccountRepository.findById(request.getBankAccountId())
+                    .orElseThrow(() -> new AccountException("Bank account not found."));
+                    String message = "";
+            if (request.getRequestType() == RequestType.CLOSE_BANK_ACCOUNT) {
+                account.setStatus(AccountStatus.CLOSED);
+                message = "closed";
+            } else if (request.getRequestType() == RequestType.SUSPEND_BANK_ACCOUNT) {
+                account.setStatus(AccountStatus.SUSPENDED);
+                message ="suspended";
+            }
+            bankAccountRepository.save(account);
+            notificationServiceClient.saveNotification(request.getUserId(), message, null);
         }
+
+        accountRequestRepository.save(request);
+        return "Request approved successfully.";
     }
 
     private String generateNewAccountNumber() {
@@ -119,25 +117,62 @@ public class AccountServiceImpl implements AccountService {
         return String.valueOf(newNumber);
     }
 
-    @Transactional
     @Override
-    public void updateAccountBalance(Long accountId, double amount) {
-        BankAccount account = bankAccountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountException("Bank account not found"));
-
-        double currentBalance = account.getBalance();
-        if (amount < 0 && currentBalance < Math.abs(amount)) {
-            throw new AccountException("Insufficient balance");
+    public String rejectAccountRequest(Long requestId, Long adminId) {
+        UserDTO admin = userServiceClient.getUserById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            throw new AccountException("Only admins can approve requests.");
         }
 
-        account.setBalance(currentBalance + amount);
-        bankAccountRepository.save(account);
+        AccountRequest request = accountRequestRepository.findById(requestId)
+                .orElseThrow(() -> new AccountException("Account request not found."));
+
+        request.setStatus(AccountRequestStatus.REJECTED);
+        accountRequestRepository.save(request);
+        return "Request rejected successfully";
+    }
+
+  @Override
+public List<BankAccountDTO> getUserAccounts(Long userId, AccountStatus status, int page, int limit) {
+    Pageable pageable = PageRequest.of(page, limit);
+    return bankAccountRepository.findByUserIdAndStatus(userId, status, pageable)
+            .map(BankAccountMapper::toDTO)
+            .getContent();
+}
+
+    @Override
+    public BankAccountDTO getPrimaryBankAccount(Long userId) {
+        return BankAccountMapper.toDTO(
+                bankAccountRepository.findFirstByUserId(userId)
+                        .orElseThrow(() -> new AccountException("No bank account found for this user."))
+        );
     }
 
     @Override
-    public double getAccountBalance(Long accountId) {
-        return bankAccountRepository.findById(accountId)
-                .map(BankAccount::getBalance)
-                .orElseThrow(() -> new AccountException("Bank account not found"));
+    public double getBalance(Long userId, Long bankAccountId) {
+        return bankAccountRepository.findBalanceByUserIdAndAccountId(userId, bankAccountId)
+                .orElseThrow(() -> new AccountException("Bank account not found."));
+    }
+
+    @Override
+    public String updateBalance(Long userId, Long bankAccountId, double amount) {
+        BankAccount account = bankAccountRepository.findById(bankAccountId)
+                .orElseThrow(() -> new AccountException("Bank account not found."));
+        
+        if (amount < 0) {
+            throw new AccountException("Amount must be greater than zero.");
+        }
+
+        account.setBalance(account.getBalance() + amount);
+        bankAccountRepository.save(account);
+        return "Balance updated successfully.";
+    }
+
+    @Override
+    public BankAccountDTO getActiveBankAccount(Long userId, Long bankAccountId) {
+        BankAccount account = bankAccountRepository.findByUserIdAndIdAndStatus(userId, bankAccountId, AccountStatus.ACTIVE)
+                .orElseThrow(() -> new AccountException("No active bank account found for the given user and account ID."));
+
+        return BankAccountMapper.toDTO(account);
     }
 }
