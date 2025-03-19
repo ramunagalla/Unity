@@ -1,4 +1,4 @@
-package com.unity.account_service.client;
+package com.unity.transaction_service.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,0 +1,16 @@
+-- Drop existing table if it exists
+DROP TABLE IF EXISTS transactions;
+
+-- Create `transactions` table
+CREATE TABLE transactions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    bank_account_id BIGINT NOT NULL,
+    amount DOUBLE NOT NULL CHECK (amount > 0),
+    type ENUM('DEPOSIT', 'WITHDRAW', 'INTERNAL_TRANSFER', 'BILL_PAYMENT', 'EXTERNAL_TRANSFER', 'PAYMENT') NOT NULL,
+    status ENUM('PENDING', 'SUCCESS', 'FAILED') NOT NULL DEFAULT 'PENDING',
+    payment_reference_id VARCHAR(255) DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
+);

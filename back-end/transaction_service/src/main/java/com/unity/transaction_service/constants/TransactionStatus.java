@@ -1,8 +1,7 @@
 package com.unity.transaction_service.constants;
 
-public enum Status {
+public enum TransactionStatus {
     PENDING,
-    ACTIVE,
-    SUSPENDED,
-    DEACTIVATED
+    SUCCESS,
+    FAILED
 }
