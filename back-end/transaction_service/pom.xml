@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.unity</groupId>
-	<artifactId>transaction_service</artifactId>
+	<artifactId>transaction-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>transaction_service</name>
+	<name>transaction-service</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
@@ -81,6 +81,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
         <!-- Spring Boot Starter Test (For Unit Testing) -->
