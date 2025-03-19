@@ -55,4 +55,18 @@ public class AccountController {
         accountService.closeAccount(accountId, adminId);
         return ResponseEntity.ok("Account closed successfully.");
     }
+
+    @PutMapping("/updateBalance")
+    public ResponseEntity<String> updateBalance(
+            @RequestParam Long accountId,
+            @RequestParam double amount) {
+        accountService.updateAccountBalance(accountId, amount);
+        return ResponseEntity.ok("Account balance updated successfully.");
+    }
+
+    @GetMapping("/getBalance")
+    public ResponseEntity<Double> getAccountBalance(@RequestParam Long accountId) {
+        double balance = accountService.getAccountBalance(accountId);
+        return ResponseEntity.ok(balance);
+    }
 }
