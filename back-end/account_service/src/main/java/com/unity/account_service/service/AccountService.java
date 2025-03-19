@@ -13,4 +13,6 @@ public interface AccountService {
     List<BankAccountDTO> getUserAccounts(Long userId);
     void deactivateAccount(Long accountId, Long adminId);
     void closeAccount(Long accountId, Long adminId);
+    void updateAccountBalance(Long accountId, double amount);
+    double getAccountBalance(Long accountId);
 }

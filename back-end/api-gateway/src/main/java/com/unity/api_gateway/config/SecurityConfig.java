@@ -20,6 +20,7 @@ public class SecurityConfig {
                 .pathMatchers("/actuator/**").permitAll()  
                 .pathMatchers("/api/users/**").permitAll()
                 .pathMatchers("/api/accounts/**").permitAll()
+                .pathMatchers("/api/transactions/**").permitAll()
                 .anyExchange().permitAll()
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))

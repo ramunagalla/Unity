@@ -15,6 +15,9 @@ import com.unity.account_service.mapper.BankAccountMapper;
 import com.unity.account_service.repository.AccountRequestRepository;
 import com.unity.account_service.repository.BankAccountRepository;
 import com.unity.account_service.service.AccountService;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -114,5 +117,27 @@ public class AccountServiceImpl implements AccountService {
         Optional<String> lastAccount = bankAccountRepository.findLastAccountNumber();
         long newNumber = lastAccount.map(Long::parseLong).orElse(START_ACCOUNT_NUMBER - 1) + 1;
         return String.valueOf(newNumber);
+    }
+
+    @Transactional
+    @Override
+    public void updateAccountBalance(Long accountId, double amount) {
+        BankAccount account = bankAccountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountException("Bank account not found"));
+
+        double currentBalance = account.getBalance();
+        if (amount < 0 && currentBalance < Math.abs(amount)) {
+            throw new AccountException("Insufficient balance");
+        }
+
+        account.setBalance(currentBalance + amount);
+        bankAccountRepository.save(account);
+    }
+
+    @Override
+    public double getAccountBalance(Long accountId) {
+        return bankAccountRepository.findById(accountId)
+                .map(BankAccount::getBalance)
+                .orElseThrow(() -> new AccountException("Bank account not found"));
     }
 }
