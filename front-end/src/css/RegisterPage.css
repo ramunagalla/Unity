@@ -2,42 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🌟 Register Page Container */
 .register-container {
-  @apply flex items-center justify-center h-screen bg-white;
+  @apply min-h-screen bg-gray-100 flex items-center justify-center;
 }
 
-/* 🌟 Form Box */
 .register-box {
-  @apply w-full max-w-sm bg-[#fc7500] p-6 rounded-xl shadow-lg;
+  @apply w-full max-w-lg bg-white p-8 rounded-lg shadow-lg;
 }
 
-/* 🌟 Heading */
 .register-heading {
-  @apply text-2xl font-bold text-center text-white mb-4;
+  @apply text-2xl font-bold text-gray-800 mb-4 text-center;
 }
 
-/* 🌟 Input Label */
-.register-label {
-  @apply block font-medium text-white;
+.form-label {
+  @apply block font-medium text-gray-700 mb-1;
 }
 
-/* 🌟 Input Field */
 .register-input {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition;
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg
+           focus:outline-none focus:ring-2 focus:ring-blue-500 
+           transition;
 }
 
-/* 🌟 Submit Button */
 .register-button {
-  @apply w-full bg-blue-100 text-black py-2 rounded-lg font-semibold hover:opacity-90 transition-all;
+  @apply w-full bg-blue-500 text-white py-2 rounded-lg font-semibold 
+           hover:bg-blue-700 transition;
 }
 
-/* 🌟 Link Text */
 .register-link {
-  @apply text-white text-sm underline cursor-pointer hover:text-gray-200 transition;
+  @apply text-blue-500 underline cursor-pointer hover:text-blue-700 transition;
 }
 
-/* 🌟 Error Message */
 .register-error {
   @apply text-red-600 text-sm text-center mb-3;
 }

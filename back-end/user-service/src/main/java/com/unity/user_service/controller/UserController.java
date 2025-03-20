@@ -2,7 +2,6 @@ package com.unity.user_service.controller;
 
 import com.unity.user_service.dto.LoginRequestDTO;
 import com.unity.user_service.dto.UserDTO;
-import com.unity.user_service.exception.UserException;
 import com.unity.user_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -58,13 +57,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
-        try {
+    public ResponseEntity<UserDTO> login(@RequestBody LoginRequestDTO loginRequest) {
             UserDTO user = userService.loginUser(loginRequest);
             return ResponseEntity.ok(user);
-        } catch (UserException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PutMapping("/approveUser")
