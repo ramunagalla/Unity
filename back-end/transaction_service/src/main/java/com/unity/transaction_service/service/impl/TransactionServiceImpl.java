@@ -67,7 +67,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         transactionRepository.save(transaction);
         String message = "transaction succesfull";
-        notificationServiceClient.saveNotification(request.getUserId(), message, null);
+       notificationServiceClient.saveNotification(request.getUserId(), message, null);
         return "Transaction successfully created.";
     }
 
@@ -94,7 +94,7 @@ public class TransactionServiceImpl implements TransactionService {
         debitTransaction.setUserId(userId);
         debitTransaction.setBankAccountId(fromBankAccountId);
         debitTransaction.setAmount(amount);
-        debitTransaction.setType(TransactionType.INTERNAL_TRANSFER);
+        debitTransaction.setType(TransactionType.INTERNAL_TRANSFER_DEBIT);
         debitTransaction.setStatus(TransactionStatus.SUCCESS);
         transactionRepository.save(debitTransaction);
 
@@ -102,7 +102,7 @@ public class TransactionServiceImpl implements TransactionService {
         creditTransaction.setUserId(userId);
         creditTransaction.setBankAccountId(toBankAccountId);
         creditTransaction.setAmount(amount);
-        creditTransaction.setType(TransactionType.INTERNAL_TRANSFER);
+        creditTransaction.setType(TransactionType.INTERNAL_TRANSFER_CREDIT);
         creditTransaction.setStatus(TransactionStatus.SUCCESS);
         transactionRepository.save(creditTransaction);
 
