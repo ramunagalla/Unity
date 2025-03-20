@@ -13,14 +13,12 @@ const UserDashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [totalBalance, setTotalBalance] = useState(0.0);
 
-  // Modal states for account request, close, and transaction popups
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
 
-  // Form & selection states
   const [selectedAccountType, setSelectedAccountType] = useState("SAVINGS");
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [lastSelectedAccount, setLastSelectedAccount] = useState(null);
@@ -29,14 +27,12 @@ const UserDashboard = () => {
   const [transferTo, setTransferTo] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
 
-  // Notification state
   const [notification, setNotification] = useState("");
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Auto-clear notification after 2 seconds
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(""), 2000);
@@ -72,13 +68,9 @@ const UserDashboard = () => {
     }
   };
 
-  // When an account row is clicked:
-  // If already selected, unselect it but keep transactions unchanged.
-  // Otherwise, update selectedAccount and lastSelectedAccount, and fetch transactions.
   const handleSelectAccount = async (account) => {
     if (selectedAccount && selectedAccount.id === account.id) {
       setSelectedAccount(null);
-      // Do not update transactions—retain the last fetched transactions.
     } else {
       setSelectedAccount(account);
       setLastSelectedAccount(account);
@@ -93,7 +85,6 @@ const UserDashboard = () => {
     }
   };
 
-  // Request Bank Account Modal Handlers
   const handleOpenRequestModal = () => setShowRequestModal(true);
   const handleRequestBankAccount = async (e) => {
     e.preventDefault();
@@ -114,7 +105,6 @@ const UserDashboard = () => {
     }
   };
 
-  // Close Bank Account Modal Handlers
   const handleOpenCloseModal = () => setShowCloseModal(true);
   const handleCloseBankAccount = async () => {
     if (!selectedAccount) return;
@@ -137,7 +127,6 @@ const UserDashboard = () => {
     }
   };
 
-  // Withdraw Modal Handlers
   const handleOpenWithdrawModal = () => setShowWithdrawModal(true);
   const handleSubmitWithdraw = async (e) => {
     e.preventDefault();
@@ -160,7 +149,6 @@ const UserDashboard = () => {
     }
   };
 
-  // Deposit Modal Handlers
   const handleOpenDepositModal = () => setShowDepositModal(true);
   const handleSubmitDeposit = async (e) => {
     e.preventDefault();
@@ -183,7 +171,6 @@ const UserDashboard = () => {
     }
   };
 
-  // Transfer Modal Handlers
   const handleOpenTransferModal = () => setShowTransferModal(true);
   const handleSubmitTransfer = async (e) => {
     e.preventDefault();
@@ -211,7 +198,6 @@ const UserDashboard = () => {
     <div className="dashboard-container">
       <Navbar />
 
-      {/* Notification Popup */}
       {notification && (
         <div className="notification-popup">
           {notification}
@@ -222,14 +208,12 @@ const UserDashboard = () => {
       <div className="dashboard-content">
         <h1 className="dashboard-heading">Welcome, {userFirstName || "User"} 👋</h1>
 
-        {/* Account Summary */}
         <div className="account-summary">
           <h2>
             Total Balance: <span>${totalBalance.toFixed(2)}</span>
           </h2>
         </div>
 
-        {/* Accounts Section */}
         <div className="accounts-section">
           <div className="accounts-header">
             <h2 className="section-title">🏦 Your Accounts</h2>
@@ -280,7 +264,6 @@ const UserDashboard = () => {
           )}
         </div>
 
-        {/* Transactions Section */}
         <div className="transactions-section">
           <h2>📜 Recent Transactions</h2>
           <div className="transactions-table-container">
@@ -326,7 +309,6 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="quick-actions">
           <button className="dashboard-btn" disabled={!selectedAccount} onClick={handleOpenWithdrawModal}>
             🔄 Withdraw Money
@@ -340,7 +322,6 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Request Bank Account Modal */}
       {showRequestModal && (
         <div className="modal-backdrop">
           <div className="modal-content">
@@ -366,7 +347,6 @@ const UserDashboard = () => {
         </div>
       )}
 
-      {/* Close Bank Account Modal */}
       {showCloseModal && (
         <div className="modal-backdrop">
           <div className="modal-content">
@@ -384,7 +364,6 @@ const UserDashboard = () => {
         </div>
       )}
 
-      {/* Withdraw Modal */}
       {showWithdrawModal && (
         <div className="modal-backdrop">
           <div className="modal-content">
@@ -414,7 +393,6 @@ const UserDashboard = () => {
         </div>
       )}
 
-      {/* Deposit Modal */}
       {showDepositModal && (
         <div className="modal-backdrop">
           <div className="modal-content">
@@ -444,7 +422,6 @@ const UserDashboard = () => {
         </div>
       )}
 
-      {/* Transfer Modal */}
       {showTransferModal && (
         <div className="modal-backdrop">
           <div className="modal-content">
