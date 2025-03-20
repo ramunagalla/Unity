@@ -159,7 +159,7 @@ public List<BankAccountDTO> getUserAccounts(Long userId, AccountStatus status, i
         BankAccount account = bankAccountRepository.findById(bankAccountId)
                 .orElseThrow(() -> new AccountException("Bank account not found."));
         
-        if (amount < 0) {
+        if (account.getBalance() + amount < 0) {
             throw new AccountException("Amount must be greater than zero.");
         }
 
