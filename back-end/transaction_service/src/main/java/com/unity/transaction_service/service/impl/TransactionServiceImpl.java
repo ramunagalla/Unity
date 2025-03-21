@@ -1,13 +1,14 @@
 package com.unity.transaction_service.service.impl;
 
 import com.unity.transaction_service.client.AccountServiceClient;
-import com.unity.transaction_service.client.NotificationServiceClient;
 import com.unity.transaction_service.constants.TransactionStatus;
 import com.unity.transaction_service.constants.TransactionType;
 import com.unity.transaction_service.dto.TransactionRequestDTO;
+import com.unity.transaction_service.dto.NotificationDTO;
 import com.unity.transaction_service.dto.TransactionDTO;
 import com.unity.transaction_service.entity.Transaction;
 import com.unity.transaction_service.exception.TransactionException;
+import com.unity.transaction_service.kafka.NotificationProducer;
 import com.unity.transaction_service.mapper.TransactionMapper;
 import com.unity.transaction_service.repository.TransactionRepository;
 import com.unity.transaction_service.service.TransactionService;
@@ -31,7 +32,7 @@ public class TransactionServiceImpl implements TransactionService {
     private AccountServiceClient accountServiceClient;
 
     @Autowired
-    private NotificationServiceClient notificationServiceClient;
+    private NotificationProducer notificationProducer;
 
     @Override
     public List<TransactionDTO> getTransactions(Long userId, Long bankAccountId, int page, int limit) {
@@ -66,8 +67,12 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setPaymentReferenceId(request.getPaymentReferenceId());
 
         transactionRepository.save(transaction);
-        String message = "transaction succesfull";
-       notificationServiceClient.saveNotification(request.getUserId(), message, null);
+        NotificationDTO event = new NotificationDTO(
+                request.getUserId(),
+                "transaction successful",
+                "TRANSACTION");
+        notificationProducer.sendNotification(event);
+
         return "Transaction successfully created.";
     }
 
@@ -106,8 +111,11 @@ public class TransactionServiceImpl implements TransactionService {
         creditTransaction.setStatus(TransactionStatus.SUCCESS);
         transactionRepository.save(creditTransaction);
 
-        String message = "Internal transfer succesfull";
-        notificationServiceClient.saveNotification(userId, message, null);
+        NotificationDTO event = new NotificationDTO(
+                userId,
+                "Internal transfer succesfull",
+                "TRANSACTION");
+        notificationProducer.sendNotification(event);
         return "Internal transfer completed successfully.";
     }
 }
