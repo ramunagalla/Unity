@@ -1,12 +1,12 @@
 package com.unity.account_service.service.impl;
 
-import com.unity.account_service.client.NotificationServiceClient;
 import com.unity.account_service.client.UserServiceClient;
 import com.unity.account_service.constants.*;
 import com.unity.account_service.dto.*;
 import com.unity.account_service.entity.AccountRequest;
 import com.unity.account_service.entity.BankAccount;
 import com.unity.account_service.exception.AccountException;
+import com.unity.account_service.kafka.NotificationProducer;
 import com.unity.account_service.mapper.AccountRequestMapper;
 import com.unity.account_service.mapper.BankAccountMapper;
 import com.unity.account_service.repository.AccountRequestRepository;
@@ -36,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
     private UserServiceClient userServiceClient;
 
     @Autowired
-    private NotificationServiceClient notificationServiceClient;
+    private NotificationProducer notificationProducer;
 
     private static final long START_ACCOUNT_NUMBER = 100000000001L;
 
@@ -44,17 +44,19 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public String createAccountRequest(AccountRequestDTO accountRequestDTO) {
 
-        if (accountRequestDTO.getUserId() == null || accountRequestDTO.getAccountType() == null || accountRequestDTO.getRequestType() == null) {
+        if (accountRequestDTO.getUserId() == null || accountRequestDTO.getAccountType() == null
+                || accountRequestDTO.getRequestType() == null) {
             throw new AccountException("User ID, account type, and request type are required.");
         }
 
-        if (accountRequestDTO.getRequestType() != RequestType.NEW_BANK_ACCOUNT && accountRequestDTO.getBankAccountId() == null) {
+        if (accountRequestDTO.getRequestType() != RequestType.NEW_BANK_ACCOUNT
+                && accountRequestDTO.getBankAccountId() == null) {
             throw new AccountException("Bank account ID is required for closing or suspending an account.");
         }
 
         AccountRequest request = AccountRequestMapper.toEntity(accountRequestDTO);
         request.setStatus(AccountRequestStatus.PENDING);
-        
+
         accountRequestRepository.save(request);
         return "Account request submitted successfully.";
     }
@@ -90,21 +92,28 @@ public class AccountServiceImpl implements AccountService {
             account.setStatus(AccountStatus.ACTIVE);
             account.setBalance(0.0);
             bankAccountRepository.save(account);
-            String message = "account created";
-        notificationServiceClient.saveNotification(request.getUserId(), message, null);
+            NotificationDTO event = new NotificationDTO(
+                    request.getUserId(),
+                    "account created",
+                    "ACCOUNT");
+            notificationProducer.sendNotification(event);
         } else {
             BankAccount account = bankAccountRepository.findById(request.getBankAccountId())
                     .orElseThrow(() -> new AccountException("Bank account not found."));
-                    String message = "";
+            String message = "";
             if (request.getRequestType() == RequestType.CLOSE_BANK_ACCOUNT) {
                 account.setStatus(AccountStatus.CLOSED);
                 message = "closed";
             } else if (request.getRequestType() == RequestType.SUSPEND_BANK_ACCOUNT) {
                 account.setStatus(AccountStatus.SUSPENDED);
-                message ="suspended";
+                message = "suspended";
             }
             bankAccountRepository.save(account);
-            notificationServiceClient.saveNotification(request.getUserId(), message, null);
+            NotificationDTO event = new NotificationDTO(
+                    request.getUserId(),
+                    message,
+                    "ACCOUNT");
+            notificationProducer.sendNotification(event);
         }
 
         accountRequestRepository.save(request);
@@ -132,20 +141,19 @@ public class AccountServiceImpl implements AccountService {
         return "Request rejected successfully";
     }
 
-  @Override
-public List<BankAccountDTO> getUserAccounts(Long userId, AccountStatus status, int page, int limit) {
-    Pageable pageable = PageRequest.of(page, limit);
-    return bankAccountRepository.findByUserIdAndStatus(userId, status, pageable)
-            .map(BankAccountMapper::toDTO)
-            .getContent();
-}
+    @Override
+    public List<BankAccountDTO> getUserAccounts(Long userId, AccountStatus status, int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        return bankAccountRepository.findByUserIdAndStatus(userId, status, pageable)
+                .map(BankAccountMapper::toDTO)
+                .getContent();
+    }
 
     @Override
     public BankAccountDTO getPrimaryBankAccount(Long userId) {
         return BankAccountMapper.toDTO(
                 bankAccountRepository.findFirstByUserId(userId)
-                        .orElseThrow(() -> new AccountException("No bank account found for this user."))
-        );
+                        .orElseThrow(() -> new AccountException("No bank account found for this user.")));
     }
 
     @Override
@@ -158,7 +166,7 @@ public List<BankAccountDTO> getUserAccounts(Long userId, AccountStatus status, i
     public String updateBalance(Long userId, Long bankAccountId, double amount) {
         BankAccount account = bankAccountRepository.findById(bankAccountId)
                 .orElseThrow(() -> new AccountException("Bank account not found."));
-        
+
         if (account.getBalance() + amount < 0) {
             throw new AccountException("Amount must be greater than zero.");
         }
@@ -170,8 +178,10 @@ public List<BankAccountDTO> getUserAccounts(Long userId, AccountStatus status, i
 
     @Override
     public BankAccountDTO getActiveBankAccount(Long userId, Long bankAccountId) {
-        BankAccount account = bankAccountRepository.findByUserIdAndIdAndStatus(userId, bankAccountId, AccountStatus.ACTIVE)
-                .orElseThrow(() -> new AccountException("No active bank account found for the given user and account ID."));
+        BankAccount account = bankAccountRepository
+                .findByUserIdAndIdAndStatus(userId, bankAccountId, AccountStatus.ACTIVE)
+                .orElseThrow(
+                        () -> new AccountException("No active bank account found for the given user and account ID."));
 
         return BankAccountMapper.toDTO(account);
     }
