@@ -32,6 +32,7 @@ public class NotificationServiceImpl implements NotificationService{
 
     @Override
     public void saveNotification(NotificationDTO notificationDTO) {
+        notificationDTO.setRead(false);
         Notification notification = NotificationMapper.toEntity(notificationDTO);
         Notification savedNotification = notificationRepository.save(notification);
         
